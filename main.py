@@ -6,7 +6,7 @@ from config.state_manager import StateManager
 def main():
     pygame.init()
     screen = pygame.display.set_mode((400, 600))
-    pygame.display.set_caption("State Manager Projesi")
+    pygame.display.set_caption("Flappy Bird")
     clock = pygame.time.Clock()
 
     manager = StateManager()
