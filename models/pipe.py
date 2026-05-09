@@ -1,30 +1,28 @@
 import pygame
-from numpy import random
 
-class Pipes(pygame.sprite.Sprite):
-    def __init__(self, x, renk=(0, 102, 0)):
+
+class Pipe(pygame.sprite.Sprite):
+    def __init__(self, x, y, is_top):
         super().__init__()
-        self.boy = random.randint(100, 400)
-        self.image = pygame.image.load(r"images\pipe.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (100, self.boy))
-        self.rect = self.image.get_rect(midbottom=(x, 650))
-        self.hiz = 3
+        pipe_height = 340
+        self.is_top = is_top
+
+        if is_top:
+            self.image = pygame.image.load(
+                r"images\pipe_green_down.png"
+            ).convert_alpha()
+            self.image = pygame.transform.scale(self.image, (60, pipe_height))
+            self.rect = self.image.get_rect(midbottom=(x, y))
+        else:
+            self.image = pygame.image.load(r"images\pipe_green_up.png").convert_alpha()
+            self.image = pygame.transform.scale(self.image, (60, pipe_height))
+            self.rect = self.image.get_rect(midtop=(x, y))
+        self.mask = pygame.mask.from_surface(self.image)
+
+        self.speed = 3
 
     def update(self):
-        self.rect.x -= self.hiz
-        if self.rect.right < 0:
-            self.kill()
+        self.rect.x -= self.speed
 
-class TopPipes(pygame.sprite.Sprite):
-    def __init__(self, x,alfa):
-            super().__init__()
-            self.boy = 500
-            self.image = pygame.image.load(r"images\pipe.png").convert_alpha()
-            self.image = pygame.transform.scale(self.image, (100, self.boy-100))
-            self.rect = self.image.get_rect(midbottom=(x, alfa))
-            self.hiz = 3
-
-    def update(self):
-        self.rect.x -= self.hiz
-        if self.rect.right < 0:
+        if self.rect.right < -20:
             self.kill()

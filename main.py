@@ -2,6 +2,8 @@ import pygame
 import sys
 from config.menu_state import MenuState
 from config.state_manager import StateManager
+from config.music_manager import MusicManager
+
 
 def main():
     pygame.init()
@@ -10,7 +12,11 @@ def main():
     clock = pygame.time.Clock()
 
     manager = StateManager()
-    manager.push(MenuState(manager)) # İlk olarak menüyü aç
+    manager.music = MusicManager()
+    manager.push(MenuState(manager))
+
+    manager.music.load_sound("hit", r"audio/hit.wav")
+    manager.music.load_sound("point", r"audio/coin.wav")
 
     while True:
         events = pygame.event.get()
@@ -27,6 +33,7 @@ def main():
 
         pygame.display.flip()
         clock.tick(60)
+
 
 if __name__ == "__main__":
     main()

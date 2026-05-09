@@ -3,67 +3,87 @@ import sys
 from config.button import Button
 from config.land import Land
 
+
 class MenuState:
     def __init__(self, manager):
         self.manager = manager
         self.font = pygame.font.SysFont("Arial", 20)
-    
-        #TODO
+
+        # TODO
+
+        self.is_fading = False
+        self.shadow_alpha = 0
+        self.shadow_surf = pygame.Surface((400, 600))
+        self.shadow_surf.fill((0, 0, 0))
+
         self.bg = pygame.image.load(r"images\bg_day.png").convert_alpha()
         self.bg = pygame.transform.scale(self.bg, (400, 600))
 
         self.bird = pygame.image.load(r"images\bird_mid.png").convert_alpha()
         self.bird = pygame.transform.scale(self.bird, (72, 72))
+        self.lands = pygame.sprite.Group()
+        for i in range(4):
+            self.lands.add(Land(i * 166))
 
-        self.land1 = Land(0)
-        self.land2 = Land(166)
-        self.land3 = Land(330)
-        self.land4 = Land(500)
-        self.lands = pygame.sprite.Group(self.land1, self.land2,self.land3, self.land4)      
+        self.start_btn = Button(
+            "BASLA", 60, 470, 100, 50, (50, 150, 50), (100, 200, 100), self.font
+        )
+        self.exit_btn = Button(
+            "ÇIKIŞ", 260, 470, 100, 50, (150, 50, 50), (200, 100, 100), self.font
+        )
 
-        # Menü seçenekleri
-        self.start_btn = Button("BASLA", 60, 470, 100, 50, (50, 150, 50), (100, 200, 100), self.font)
-        self.exit_btn = Button("ÇIKIŞ", 260, 470, 100, 50, (150, 50, 50), (200, 100, 100), self.font)
-        
         self.buttons = [self.start_btn, self.exit_btn]
 
     def enter(self):
-        print("Menüye girildi.")
+        self.manager.music.load_music(r"audio/bg.mp3")
+        self.manager.music.play_music()
 
     def exit(self):
-        print("Menüden çıkılıyor.")
+        pass
 
     def handle_events(self, events):
         for event in events:
-            # Buton tıklamalarını kontrol et
-            if self.start_btn.is_clicked(event):
-                print("kaya")
-            if self.exit_btn.is_clicked(event):
-                pygame.quit()
-                import sys
-                sys.exit()
+            if not self.is_fading:
+                if self.start_btn.is_clicked(event):
+                    self.manager.music.stop_music()
+                    self.is_fading = True
+                if self.exit_btn.is_clicked(event):
+                    pygame.quit()
+                    sys.exit()
 
     def update(self):
-        mouse_pos = pygame.mouse.get_pos()
-        for btn in self.buttons:
-            btn.update(mouse_pos)
-            
+        if not self.is_fading:
+            mouse_pos = pygame.mouse.get_pos()
+            for btn in self.buttons:
+                btn.update(mouse_pos)
+        else:
+            self.shadow_alpha += 5
+            if self.shadow_alpha >= 255:
+                self.shadow_alpha = 255
+            if self.shadow_alpha == 255:
+                from config.game_state import GameState
+
+                self.manager.music.stop_music()
+                self.manager.change(GameState(self.manager))
+
         self.lands.update()
         if len(self.lands) < 4:
-            new_land = Land(400)
-            self.lands.add(new_land)
+            self.lands.add(Land(400))
 
     def draw(self, screen):
-        screen.blit(self.bg,(0,0)) #Arka plan
-        # draw metodunda (Butonlardan hemen önce, arkaplandan sonra çizdir)
+        screen.blit(self.bg, (0, 0))
         self.lands.draw(screen)
-        screen.blit(self.bird,(164,200))
-        
+        screen.blit(self.bird, (164, 200))
+
         title_font = pygame.font.SysFont("Arial", 60, bold=True)
         title_surf = title_font.render("Flappy Bird", True, (255, 255, 255))
         title_surf1 = title_font.render("Flappy Bird", True, (0, 0, 0))
         screen.blit(title_surf1, (50, 80))
         screen.blit(title_surf, (52, 82))
-        
+
         for btn in self.buttons:
             btn.draw(screen)
+
+        if self.shadow_alpha > 0:
+            self.shadow_surf.set_alpha(self.shadow_alpha)
+            screen.blit(self.shadow_surf, (0, 0))
