@@ -14,6 +14,10 @@ class GameState(State):
         self.bg = pygame.image.load(r"images\bg_day.png").convert_alpha()
         self.bg = pygame.transform.scale(self.bg, (400, 600))
         self.manager.music.load_music(r"audio\coin.wav")
+        self.ready_image = pygame.transform.scale((pygame.image.load(r"images\text_ready.png")),(200,60))
+        self.tutorial_image = pygame.transform.scale((pygame.image.load(r"images\tutorial.png")),(120,100))
+
+
 
         self.game_started = False
         self.is_game_over = False
@@ -90,6 +94,15 @@ class GameState(State):
             if self.bird.rect.top <= -13 or self.bird.rect.bottom >= 564:
                 self.is_game_over = True
 
+            if self.is_game_over:
+                # Müziği durdur ve GameOverState'e skorla beraber geç
+                self.manager.music.stop_music()
+                self.manager.music.play_sound("hit") # Çarpma sesi
+                
+                # Yeni duruma skorunu da gönderiyoruz
+                from config.game_over_state import GameOverState
+                self.manager.change(GameOverState(self.manager, self.score))
+
             for pipe in self.pipes:
                 # TODO
                 if (
@@ -108,13 +121,12 @@ class GameState(State):
         screen.blit(self.bird.image, self.bird.rect)
 
         if not self.game_started:
-            ready_font = pygame.font.SysFont("Arial", 30, bold=True)
-            ready_surf = ready_font.render("Hazırsan 'Space' bas", True, (255, 215, 0))
-            ready_rect = ready_surf.get_rect(center=(200, 500))
-            screen.blit(ready_surf, ready_rect)
+            screen.blit(self.ready_image,(100,200))
+            screen.blit(self.tutorial_image,(140,400))
+
 
         score_surf = self.font.render(f"Skor: {self.score}", True, (255, 255, 255))
-        screen.blit(score_surf, (10, 10))
+        screen.blit(score_surf,(10, 10))
 
         if self.is_game_over:
             go_font = pygame.font.SysFont("Arial", 50, bold=True)
