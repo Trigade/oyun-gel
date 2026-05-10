@@ -42,7 +42,7 @@ class MenuState:
                     self.manager.music.stop_music()
                     self.is_fading = True
                 if self.exit_btn.is_clicked(event):
-                    print("Kaya")
+                    pass
 
     def update(self):
         if not self.is_fading:

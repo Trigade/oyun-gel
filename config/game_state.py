@@ -2,21 +2,31 @@ import pygame
 import random
 from config.state import State
 from config.land import Land
+from config.button import Button
 from models.bird import Bird
 from models.pipe import Pipe
-
 
 class GameState(State):
     def __init__(self, manager):
         self.manager = manager
+        self.is_paused = False
         self.font = pygame.font.SysFont("Arial", 30)
 
         self.bg = pygame.image.load(r"images\bg_day.png").convert_alpha()
         self.bg = pygame.transform.scale(self.bg, (400, 600))
         self.manager.music.load_music(r"audio\bg.mp3")
         self.manager.music.load_sound("coin", r"audio/coin.wav")
+        self.manager.music.load_sound("jump", r"audio/zipla.wav")
         self.ready_image = pygame.transform.scale((pygame.image.load(r"images\text_ready.png")),(200,60))
         self.tutorial_image = pygame.transform.scale((pygame.image.load(r"images\tutorial.png")),(120,100))
+        self.pause_btn = Button(r"images\button_pause.png", 360, 40, 40, 40)
+
+        self.number_images = [
+            pygame.transform.scale(
+                pygame.image.load(f"images/{i}.png").convert_alpha(), 
+                (30,55)
+            ) for i in range(10)
+        ]
 
         self.manager.music.play_music()
 
@@ -58,18 +68,46 @@ class GameState(State):
                 import sys
 
                 sys.exit()
-
-            if event.type == pygame.KEYDOWN or (
-                event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
-            ):
-                if not self.game_started:
-                    self.game_started = True
-                    self.bird.zipla()
-                    self.pipe_timer = pygame.time.get_ticks()  # Zamanlayıcıyı başlat
-                elif not self.is_game_over:
-                    self.bird.zipla()
+            if self.pause_btn.is_clicked(event):
+                # DURAKLATMA MANTIĞI GÜNCELLEMESİ
+                if not self.is_paused:
+                    # Oyun tam şu an durdu, durma zamanını kaydet
+                    self.pause_start_time = pygame.time.get_ticks()
+                    self.is_paused = True
+                else:
+                    # Oyun şu an devam edecek, ne kadar süre durduğunu hesapla
+                    pause_duration = pygame.time.get_ticks() - self.pause_start_time
+                    # Zamanlayıcıyı bu süre kadar ileri it ki borular birikmesin
+                    self.pipe_timer += pause_duration
+                    self.is_paused = False
+                return
+            if event.type ==pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    self.is_paused = not(self.is_paused)
+            
+            if not self.is_paused:
+            # Sadece SPACE tuşuna basıldığında VEYA Mouse sol tık yapıldığında çalışır
+                if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (
+                    event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+                ):
+                    if not self.game_started:
+                        self.game_started = True
+                        self.bird.zipla()
+                        self.manager.music.play_sound("jump")
+                        self.pipe_timer = pygame.time.get_ticks()
+                    elif not self.is_game_over:
+                        self.bird.zipla()
+                        self.manager.music.play_sound("jump")
 
     def update(self):
+        mouse_pos = pygame.mouse.get_pos()
+        self.pause_btn.update(mouse_pos)
+
+        if self.is_paused: #
+            mouse_pos = pygame.mouse.get_pos()
+            self.pause_btn.update(mouse_pos)
+            return
+
         self.lands.update()
         if len(self.lands) < 4:
             self.lands.add(Land(400))
@@ -120,7 +158,6 @@ class GameState(State):
                         
     def draw(self, screen):
         screen.blit(self.bg, (0, 0))
-
         self.pipes.draw(screen)
         self.lands.draw(screen)
         screen.blit(self.bird.image, self.bird.rect)
@@ -129,12 +166,43 @@ class GameState(State):
             screen.blit(self.ready_image,(100,200))
             screen.blit(self.tutorial_image,(140,400))
 
-
-        score_surf = self.font.render(f"Skor: {self.score}", True, (255, 255, 255))
-        screen.blit(score_surf,(10, 10))
+        if self.is_paused:
+            # Hafif bir karartma (Opsiyonel)
+            pause_overlay = pygame.Surface((400, 600), pygame.SRCALPHA)
+            pause_overlay.fill((0, 0, 0, 100)) # Siyah, yarı saydam
+            screen.blit(pause_overlay, (0, 0))
+            
+            # Pause Yazısı
+            p_font = pygame.font.SysFont("Arial", 50, bold=True)
+            p_surf = p_font.render("DURAKLATILDI", True, (255, 255, 255))
+            p_rect = p_surf.get_rect(center=(200, 300))
+            screen.blit(p_surf, p_rect)
+            
+            # Devam etmek için ipucu
+            hint_surf = self.font.render("Devam etmek için butona basın", True, (200, 200, 200))
+            screen.blit(hint_surf, hint_surf.get_rect(center=(200, 360)))
 
         if self.is_game_over:
             go_font = pygame.font.SysFont("Arial", 50, bold=True)
             go_surf = go_font.render("OYUN BİTTİ", True, (200, 0, 0))
             go_rect = go_surf.get_rect(center=(200, 300))
             screen.blit(go_surf, go_rect)
+        self.draw_score(screen)
+    
+    def draw_score(self, screen):
+        # Skoru string'e çevir (Örn: 12 -> "12")
+        score_str = str(self.score)
+        
+        # Tüm rakamların toplam genişliğini hesapla (merkeze hizalamak için)
+        total_width = 0
+        for char in score_str:
+            total_width += self.number_images[int(char)].get_width() + 2 # 2px boşluk
+            
+        # Başlangıç X noktası (Ekranın tam ortası olsun istiyorsan)
+        start_x = (400 - total_width) // 2
+        y_pos = 50 # Ekranın yukarısından mesafe
+        
+        for char in score_str:
+            img = self.number_images[int(char)]
+            screen.blit(img, (start_x, y_pos))
+            start_x += img.get_width() + 2 # Bir sonraki rakamı yanına çiz
