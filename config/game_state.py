@@ -10,6 +10,7 @@ class GameState(State):
     def __init__(self, manager):
         self.manager = manager
         self.is_paused = False
+        self.pause_start_time = 0
         self.font = pygame.font.SysFont("Arial", 30)
 
         self.bg = pygame.image.load(r"images\bg_day.png").convert_alpha()
@@ -68,7 +69,7 @@ class GameState(State):
                 import sys
 
                 sys.exit()
-            if self.pause_btn.is_clicked(event):
+            if self.pause_btn.is_clicked(event)or (event.type == pygame.KEYDOWN and event.key == pygame.K_p):
                 if not self.is_paused:
                     self.pause_start_time = pygame.time.get_ticks()
                     self.is_paused = True
@@ -77,9 +78,6 @@ class GameState(State):
                     self.pipe_timer += pause_duration
                     self.is_paused = False
                 return
-            if event.type ==pygame.KEYDOWN:
-                if event.key == pygame.K_p:
-                    self.is_paused = not(self.is_paused)
             
             if not self.is_paused:
                 if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (
@@ -153,7 +151,7 @@ class GameState(State):
         self.pipes.draw(screen)
         self.lands.draw(screen)
         screen.blit(self.bird.image, self.bird.rect)
-
+        self.pause_btn.draw(screen)
         if not self.game_started:
             screen.blit(self.ready_image,(100,200))
             screen.blit(self.tutorial_image,(140,400))
