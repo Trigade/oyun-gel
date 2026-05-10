@@ -103,7 +103,9 @@ class GameState(State):
                 
                 # Yeni duruma skorunu da gönderiyoruz
                 from config.game_over_state import GameOverState
-                self.manager.change(GameOverState(self.manager, self.score))
+                screenshot = pygame.display.get_surface().copy()
+                # Fotoğrafı (screenshot) GameOverState'e gönderiyoruz
+                self.manager.change(GameOverState(self.manager, self.score, screenshot))
 
             for pipe in self.pipes:
                 # TODO

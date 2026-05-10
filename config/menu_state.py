@@ -14,7 +14,7 @@ class MenuState:
         self.shadow_alpha = 0
         self.shadow_surf = pygame.Surface((400, 600))
         self.shadow_surf.fill((0, 0, 0))
-
+        self.title = pygame.transform.scale((pygame.image.load(r"images\title.png")),(270,75))
         self.bg = pygame.image.load(r"images\bg_day.png").convert_alpha()
         self.bg = pygame.transform.scale(self.bg, (400, 600))
 
@@ -68,12 +68,7 @@ class MenuState:
         self.lands.draw(screen)
         screen.blit(self.bird, (164, 200))
 
-        title_font = pygame.font.SysFont("Arial", 60, bold=True)
-        title_surf = title_font.render("Flappy Bird", True, (255, 255, 255))
-        title_surf1 = title_font.render("Flappy Bird", True, (0, 0, 0))
-        screen.blit(title_surf1, (50, 80))
-        screen.blit(title_surf, (52, 82))
-
+        screen.blit(self.title, (65, 120))
         for btn in self.buttons:
             btn.draw(screen)
 
