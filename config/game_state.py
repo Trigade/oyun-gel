@@ -13,11 +13,12 @@ class GameState(State):
 
         self.bg = pygame.image.load(r"images\bg_day.png").convert_alpha()
         self.bg = pygame.transform.scale(self.bg, (400, 600))
-        self.manager.music.load_music(r"audio\coin.wav")
+        self.manager.music.load_music(r"audio\bg.mp3")
+        self.manager.music.load_sound("coin", r"audio/coin.wav")
         self.ready_image = pygame.transform.scale((pygame.image.load(r"images\text_ready.png")),(200,60))
         self.tutorial_image = pygame.transform.scale((pygame.image.load(r"images\tutorial.png")),(120,100))
 
-
+        self.manager.music.play_music()
 
         self.game_started = False
         self.is_game_over = False
@@ -79,6 +80,7 @@ class GameState(State):
                 self.spawn_pipes()
                 self.pipe_timer = current_time
 
+
             # TODO
             self.all_sprites.update()
 
@@ -110,9 +112,10 @@ class GameState(State):
                     and pipe.rect.right < self.bird.rect.left
                 ):
                     if hasattr(pipe, "is_top") and not pipe.is_top:
+                        self.manager.music.play_sound("coin")
                         self.score += 1
                         pipe.scored = True
-
+                        
     def draw(self, screen):
         screen.blit(self.bg, (0, 0))
 

@@ -16,8 +16,6 @@ def main():
     manager.push(MenuState(manager))
 
     manager.music.load_sound("hit", r"audio/hit.wav")
-    manager.music.load_sound("point", r"audio/coin.wav")
-
     while True:
         events = pygame.event.get()
         for event in events:

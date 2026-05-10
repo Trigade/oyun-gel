@@ -1,5 +1,4 @@
 import pygame
-import sys
 from config.button import Button
 from config.land import Land
 
@@ -25,17 +24,12 @@ class MenuState:
         for i in range(4):
             self.lands.add(Land(i * 166))
 
-        self.start_btn = Button(
-            "BASLA", 60, 470, 100, 50, (50, 150, 50), (100, 200, 100), self.font
-        )
-        self.exit_btn = Button(
-            "ÇIKIŞ", 260, 470, 100, 50, (150, 50, 50), (200, 100, 100), self.font
-        )
-
-        self.buttons = [self.start_btn, self.exit_btn]
+        self.start_btn = Button(r"images\button_play.png", 100, 500, 120, 70)
+        self.exit_btn = Button(r"images\button_score.png", 300, 500, 120, 70)
+        self.buttons = [self.start_btn,self.exit_btn]
 
     def enter(self):
-        self.manager.music.load_music(r"audio/bg.mp3")
+        self.manager.music.load_music(r"audio/theme.ogg")
         self.manager.music.play_music()
 
     def exit(self):
@@ -48,8 +42,7 @@ class MenuState:
                     self.manager.music.stop_music()
                     self.is_fading = True
                 if self.exit_btn.is_clicked(event):
-                    pygame.quit()
-                    sys.exit()
+                    print("Kaya")
 
     def update(self):
         if not self.is_fading:
