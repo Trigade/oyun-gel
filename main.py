@@ -23,7 +23,6 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-        # Aktif durum varsa yönet
         if manager.active:
             manager.active.handle_events(events)
             manager.active.update()

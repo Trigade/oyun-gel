@@ -69,15 +69,11 @@ class GameState(State):
 
                 sys.exit()
             if self.pause_btn.is_clicked(event):
-                # DURAKLATMA MANTIĞI GÜNCELLEMESİ
                 if not self.is_paused:
-                    # Oyun tam şu an durdu, durma zamanını kaydet
                     self.pause_start_time = pygame.time.get_ticks()
                     self.is_paused = True
                 else:
-                    # Oyun şu an devam edecek, ne kadar süre durduğunu hesapla
                     pause_duration = pygame.time.get_ticks() - self.pause_start_time
-                    # Zamanlayıcıyı bu süre kadar ileri it ki borular birikmesin
                     self.pipe_timer += pause_duration
                     self.is_paused = False
                 return
@@ -86,7 +82,6 @@ class GameState(State):
                     self.is_paused = not(self.is_paused)
             
             if not self.is_paused:
-            # Sadece SPACE tuşuna basıldığında VEYA Mouse sol tık yapıldığında çalışır
                 if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (
                     event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
                 ):
@@ -135,14 +130,11 @@ class GameState(State):
                 self.is_game_over = True
 
             if self.is_game_over:
-                # Müziği durdur ve GameOverState'e skorla beraber geç
                 self.manager.music.stop_music()
                 self.manager.music.play_sound("hit") # Çarpma sesi
                 
-                # Yeni duruma skorunu da gönderiyoruz
                 from config.game_over_state import GameOverState
                 screenshot = pygame.display.get_surface().copy()
-                # Fotoğrafı (screenshot) GameOverState'e gönderiyoruz
                 self.manager.change(GameOverState(self.manager, self.score, screenshot))
 
             for pipe in self.pipes:
@@ -167,18 +159,15 @@ class GameState(State):
             screen.blit(self.tutorial_image,(140,400))
 
         if self.is_paused:
-            # Hafif bir karartma (Opsiyonel)
             pause_overlay = pygame.Surface((400, 600), pygame.SRCALPHA)
             pause_overlay.fill((0, 0, 0, 100)) # Siyah, yarı saydam
             screen.blit(pause_overlay, (0, 0))
             
-            # Pause Yazısı
             p_font = pygame.font.SysFont("Arial", 50, bold=True)
             p_surf = p_font.render("DURAKLATILDI", True, (255, 255, 255))
             p_rect = p_surf.get_rect(center=(200, 300))
             screen.blit(p_surf, p_rect)
             
-            # Devam etmek için ipucu
             hint_surf = self.font.render("Devam etmek için butona basın", True, (200, 200, 200))
             screen.blit(hint_surf, hint_surf.get_rect(center=(200, 360)))
 
@@ -190,19 +179,15 @@ class GameState(State):
         self.draw_score(screen)
     
     def draw_score(self, screen):
-        # Skoru string'e çevir (Örn: 12 -> "12")
         score_str = str(self.score)
         
-        # Tüm rakamların toplam genişliğini hesapla (merkeze hizalamak için)
         total_width = 0
         for char in score_str:
-            total_width += self.number_images[int(char)].get_width() + 2 # 2px boşluk
+            total_width += self.number_images[int(char)].get_width() + 2
             
-        # Başlangıç X noktası (Ekranın tam ortası olsun istiyorsan)
         start_x = (400 - total_width) // 2
-        y_pos = 50 # Ekranın yukarısından mesafe
-        
+        y_pos = 50
         for char in score_str:
             img = self.number_images[int(char)]
             screen.blit(img, (start_x, y_pos))
-            start_x += img.get_width() + 2 # Bir sonraki rakamı yanına çiz
+            start_x += img.get_width() + 2

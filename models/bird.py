@@ -41,10 +41,10 @@ class Bird(pygame.sprite.Sprite):
 
         self.image = pygame.transform.rotate(raw_image, rotation_angle)
 
-        # TODO: Rect'i güncelle ama merkezini sabit tut (Zıplarken titremeyi engeller)
+        # TODO
         self.rect = self.image.get_rect(center=self.rect.center)
 
-        # TODO: Maskeyi DÖNMÜŞ resme göre tekrar çıkar (Erken ölmeyi engeller)
+        # TODO
         self.mask = pygame.mask.from_surface(self.image)
 
     def zipla(self):
